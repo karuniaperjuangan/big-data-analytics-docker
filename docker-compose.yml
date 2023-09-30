@@ -2,15 +2,13 @@ version: "3.9"
 
 services:
   ####### HADOOP
-  hadoop-namenode:
-    container_name: hadoop-namenode
+  namenode:
+    image: bde2020/hadoop-namenode:2.0.0-hadoop3.2.1-java8
+    container_name: namenode
     restart: always
-    build: ./hadoop/namenode
     ports:
       - 9870:9870
       - 9000:9000
-    networks:
-     - bds-network
     volumes:
       - hadoop_namenode:/hadoop/dfs/name
     environment:
@@ -18,49 +16,41 @@ services:
     env_file:
       - ./hadoop/hadoop.env
 
-  hadoop-datanode:
-    container_name: hadoop-datanode
+  datanode:
+    image: bde2020/hadoop-datanode:2.0.0-hadoop3.2.1-java8
+    container_name: datanode
     restart: always
-    build: ./hadoop/datanode
     volumes:
       - hadoop_datanode:/hadoop/dfs/data
-    networks:
-     - bds-network
     environment:
-      SERVICE_PRECONDITION: "hadoop-namenode:9870"
+      SERVICE_PRECONDITION: "namenode:9870"
     env_file:
       - ./hadoop/hadoop.env
   
-  hadoop-resourcemanager:
-    container_name: hadoop-resourcemanager
+  resourcemanager:
+    image: bde2020/hadoop-resourcemanager:2.0.0-hadoop3.2.1-java8
+    container_name: resourcemanager
     restart: always
-    build: ./hadoop/resourcemanager
-    networks:
-     - bds-network
     environment:
-      SERVICE_PRECONDITION: "hadoop-namenode:9000 hadoop-namenode:9870 hadoop-datanode:9864"
+      SERVICE_PRECONDITION: "namenode:9000 namenode:9870 datanode:9864"
     env_file:
       - ./hadoop/hadoop.env
 
-  hadoop-nodemanager-1:
-    container_name: hadoop-nodemanager-1
+  nodemanager1:
+    image: bde2020/hadoop-nodemanager:2.0.0-hadoop3.2.1-java8
+    container_name: nodemanager
     restart: always
-    build: ./hadoop/nodemanager
-    networks:
-     - bds-network
     environment:
-      SERVICE_PRECONDITION: "hadoop-namenode:9000 hadoop-namenode:9870 hadoop-datanode:9864 hadoop-resourcemanager:8088"
+      SERVICE_PRECONDITION: "namenode:9000 namenode:9870 datanode:9864 resourcemanager:8088"
     env_file:
       - ./hadoop/hadoop.env
-
-  hadoop-historyserver:
-    container_name: hadoop-historyserver
+  
+  historyserver:
+    image: bde2020/hadoop-historyserver:2.0.0-hadoop3.2.1-java8
+    container_name: historyserver
     restart: always
-    build: ./hadoop/historyserver
-    networks:
-     - bds-network
     environment:
-      SERVICE_PRECONDITION: "hadoop-namenode:9000 hadoop-namenode:9870 hadoop-datanode:9864 hadoop-resourcemanager:8088"
+      SERVICE_PRECONDITION: "namenode:9000 namenode:9870 datanode:9864 resourcemanager:8088"
     volumes:
       - hadoop_historyserver:/hadoop/yarn/timeline
     env_file:
